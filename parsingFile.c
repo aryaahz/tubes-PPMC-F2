@@ -66,11 +66,21 @@ int main() {
         completed[j] = 0;
     }
 
+    //Printingnya pake header buat baris dan kolom, tapi matriks jaraknya tetep cuma jarak ya isinya
+    //Jadi nama kota gaada di matriks
     for(int i = 0; i < jumKota; i++) {
+        printf("\n\t");
+
+        for(int j = 0; j < jumKota; j++) {
+            if (i == 0) printf("%.4s\t", peta[j].kota);
+        }
+
         printf("\n");
-        
-        for(int j = 0; j < jumKota; j++)
-            printf("\t%.2f", jarak[i][j]);
+        printf("%.4s", peta[i].kota);        
+
+        for (int k = 0; k < jumKota; k++) {
+            printf("\t%.2f", jarak[i][k]);
+        }
     }
 
     return 0;
