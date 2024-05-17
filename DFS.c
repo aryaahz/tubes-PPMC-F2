@@ -1,9 +1,10 @@
+#include <limits.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 #include <stdbool.h>
-#include <limits.h>
+#include <time.h>
 
 #define MAX 255
 
@@ -42,9 +43,13 @@ void tsp(Peta kota[MAX], float jarak[MAX][MAX], bool visited[], int currPos, int
 }
 
 int main() {
-    //Buka file, cek validitas file
+    // Waktu
+    clock_t start_time = clock();
+
+
+    // Buka file, cek validitas file
     char namafile[MAX];
-    printf("Masukkan nama file: ");
+    printf("Enter list of cities file name: ");
     scanf("%s", namafile);
     FILE *file = fopen(namafile, "r");
 
@@ -73,17 +78,11 @@ int main() {
 
     fclose(file);
 
-    // Print database kota
-    printf("\nData kota pada struct:\n");
-    for (int j = 0; j < jumKota; j++) {
-        printf("Kota: %s, Latitude: %.4f, Longitude: %.4f\n", peta[j].kota, peta[j].lintang, peta[j].bujur);
-    }
 
-    //Buat matriks jarak antarkota dan print
+    // Jarak antar kota
     float jarak[MAX][MAX], completed[MAX];
     char City[MAX][MAX];
 
-    printf("\nMatriks jarak antarkota:");
     for(int j = 0; j < jumKota; j++) {
         strcpy(City[j], peta[j].kota);
         for(int k = 0; k < jumKota; k++) { //Jarak dari kota 1 ke kota 1 lgsg dijadiin 0 aja di matriks
@@ -92,20 +91,6 @@ int main() {
         completed[j] = 0;
     }
 
-    for(int i = 0; i < jumKota; i++) {
-        printf("\n\t");
-
-        for(int j = 0; j < jumKota; j++) {
-            if (i == 0) printf("%.4s\t", peta[j].kota);
-        }
-
-        printf("\n");
-        printf("%.4s", peta[i].kota);        
-
-        for (int k = 0; k < jumKota; k++) {
-            printf("\t%.2f", jarak[i][k]);
-        }
-    }
 
     bool visited[MAX];
 
@@ -113,10 +98,12 @@ int main() {
         visited[i] = false;
     }
 
+
+    // Posisi awal
     char startCity [MAX];
     int position;
 
-    printf("Masukkan kota awal :");
+    printf("Enter starting point: ");
     scanf("%s",startCity);
 
     for (int i = 0; i < jumKota; i++){
@@ -125,8 +112,9 @@ int main() {
             break;
         }
     }
-    printf("%d", position);
 
+
+    // Inti kode
     visited[position] = true;
     float ans = INT_MAX;
     int path[MAX];
@@ -136,16 +124,23 @@ int main() {
 
     tsp(peta, jarak, visited, position, jumKota, 1, 0, &ans, path, minpath);
 
+
+    // Output 
+    printf("Best route found:\n");
+
     for (int i = 0; i < jumKota; i++){
         printf("%s -> ", peta[minpath[i]].kota);
     }
+
     printf("%s\n", peta[minpath[0]].kota);
+    printf("Best route distance: %.4f\n", ans);
 
-    printf("\n");
-    printf("Jarak minimum : %.4f\n", ans);
 
-    
+    // Waktu
+    clock_t end_time = clock();
+    double elapsed_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+
+    printf("Time elapsed: %.4f s", elapsed_time);
 
     return 0;
 }
-
