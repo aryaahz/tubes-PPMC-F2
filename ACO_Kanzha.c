@@ -40,3 +40,141 @@ void initialize_pheromone(int num_cities) {
         }
     }
 }
+
+double calculate_probability(int city1, int city2, City cities[], int num_cities, int visited_cities[], double total_distance) {
+    double pheromone_factor = pow(pheromone[city1][city2].pheromone, ALPHA);
+    double distance_factor = pow(1 / haversine_distance(cities[city1], cities[city2]), BETA);
+    double total = 0.0;
+
+    for (int i = 0; i < num_cities; i++) {
+        if (visited_cities[i] == 0) {
+            total += pow(pheromone[city1][i].pheromone, ALPHA) * pow(1 / haversine_distance(cities[city1], cities[i]), BETA);
+        }
+    }
+
+    return (pheromone_factor * distance_factor) / total;
+}
+
+int select_next_city(int current_city, City cities[], int num_cities, int visited_cities[]) {
+    double max_probability = 0.0;
+    int selected_city = -1;
+
+    for (int i = 0; i < num_cities; i++) {
+        if (visited_cities[i] == 0) {
+            double probability = calculate_probability(current_city, i, cities, num_cities, visited_cities, 0.0);
+            if (probability > max_probability) {
+                max_probability = probability;
+                selected_city = i;
+            }
+        }
+    }
+
+    return selected_city;
+}
+
+void update_pheromone(int num_cities, int route[], double total_distance) {
+    for (int i = 0; i < num_cities; i++) {
+        int city1 = route[i];
+        int city2 = route[(i + 1) % num_cities];
+        pheromone[city1][city2].pheromone += Q / total_distance;
+        pheromone[city2][city1].pheromone += Q / total_distance;
+    }
+
+    for (int i = 0; i < num_cities; i++) {
+        for (int j = 0; j < num_cities; j++) {
+            pheromone[i][j].pheromone *= (1 - RHO);
+        }
+    }
+}
+
+void aco_algorithm(City cities[], int num_cities) {
+    initialize_pheromone(num_cities);
+    int num_ants = num_cities;
+    int routes[num_ants][num_cities];
+    double distances[num_ants];
+    int best_route[num_cities];
+    double best_distance = -1;
+
+    for (int iteration = 0; iteration < 100; iteration++) {
+       
+        for (int ant = 0; ant < num_ants; ant++) {
+            int visited_cities[num_cities];
+            memset(visited_cities, 0, sizeof(visited_cities));
+
+            int current_city = rand() % num_cities;
+            visited_cities[current_city] = 1;
+            routes[ant][0] = current_city;
+
+            double total_distance = 0;
+            for (int i = 1; i < num_cities; i++) {
+                int next_city = select_next_city(current_city, cities, num_cities, visited_cities);
+                visited_cities[next_city] = 1;
+                routes[ant][i] = next_city;
+                total_distance += haversine_distance(cities[current_city], cities[next_city]);
+                current_city = next_city;
+            }
+            total_distance += haversine_distance(cities[current_city], cities[routes[ant][0]]);
+            distances[ant] = total_distance;
+
+            if (best_distance == -1 || total_distance < best_distance) {
+                best_distance = total_distance;
+                memcpy(best_route, routes[ant], sizeof(best_route));
+            }
+        }
+
+      
+        for (int ant = 0; ant < num_ants; ant++) {
+            update_pheromone(num_cities, routes[ant], distances[ant]);
+        }
+    }
+
+
+  
+    printf("Best Route Found:\n");
+    for (int i = 0; i < num_cities; i++) {
+        printf("%s -> ", cities[best_route[i]].name);
+                 
+    }
+    printf("%s\n", cities[best_route[0]].name); 
+    printf("Best Route Distance: %.2f km\n", best_distance);
+
+}
+
+int main() {
+    FILE *file;
+    char filename[50];
+    printf("Masukkan nama file input (*.csv): ");
+    scanf("%s", filename);
+
+
+
+    // Baca file input
+    file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("File tidak ditemukan.\n");
+        return 1;
+    }
+
+    // Membaca data kota dari file CSV
+    int num_cities = 0;
+    char line[100];
+
+    while (fgets(line, sizeof(line), file) != NULL) {
+        num_cities++;
+    }
+    rewind(file); // Kembalikan posisi file ke awal
+
+    // Inisialisasi array of struct untuk menyimpan data kota
+    City cities[num_cities];
+
+    // Membaca data kota dari file CSV dan memasukkannya ke dalam array of struct
+    for (int i = 0; i < num_cities; i++) {
+        fscanf(file, "%s %lf %lf", cities[i].name, &cities[i].latitude, &cities[i].longitude);
+        cities[i].visited = 0;
+    }
+    fclose(file);
+    // Menjalankan algoritma ACO
+    aco_algorithm(cities, num_cities);
+
+    return 0;
+}
