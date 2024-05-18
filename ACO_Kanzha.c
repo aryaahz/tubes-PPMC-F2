@@ -5,25 +5,23 @@
 #include <time.h> // Untuk clock()
 
 #define EARTH_RADIUS 6371.0
-#define ALPHA 1.0
-#define BETA 2.0 
-#define RHO 0.5
-#define Q 100
-#define INITIAL_PHEROMONE 0.1
-#define M_PI  3.14159265358979323846
+#define ALPHA 1.0  
+#define BETA 2.0  
+#define RHO 0.5    
+#define Q 100     
+#define INITIAL_PHEROMONE 0.1 
 
 typedef struct {
     char name[50];
     double latitude;
     double longitude;
-    int visited;
 } City;
 
 typedef struct {
-    double pheromone; 
+    double pheromone;
 } Edge;
 
-Edge pheromone[100][100];
+Edge pheromone[100][100]; // Array untuk menyimpan nilai pheromone
 
 double haversine_distance(City city1, City city2) {
     double dlat = (city2.latitude - city1.latitude) * M_PI / 180.0;
@@ -41,7 +39,7 @@ void initialize_pheromone(int num_cities) {
     }
 }
 
-double calculate_probability(int city1, int city2, City cities[], int num_cities, int visited_cities[], double total_distance) {
+double calculate_probability(int city1, int city2, City cities[], int num_cities, int visited_cities[]) {
     double pheromone_factor = pow(pheromone[city1][city2].pheromone, ALPHA);
     double distance_factor = pow(1 / haversine_distance(cities[city1], cities[city2]), BETA);
     double total = 0.0;
@@ -56,12 +54,12 @@ double calculate_probability(int city1, int city2, City cities[], int num_cities
 }
 
 int select_next_city(int current_city, City cities[], int num_cities, int visited_cities[]) {
-    double max_probability = 0.0;
+    double max_probability = -1.0;
     int selected_city = -1;
 
     for (int i = 0; i < num_cities; i++) {
         if (visited_cities[i] == 0) {
-            double probability = calculate_probability(current_city, i, cities, num_cities, visited_cities, 0.0);
+            double probability = calculate_probability(current_city, i, cities, num_cities, visited_cities);
             if (probability > max_probability) {
                 max_probability = probability;
                 selected_city = i;
@@ -87,21 +85,21 @@ void update_pheromone(int num_cities, int route[], double total_distance) {
     }
 }
 
-void aco_algorithm(City cities[], int num_cities) {
+void aco_algorithm(City cities[], int num_cities, int best_route[], double *best_distance, double *time_elapsed, int start_city) {
     initialize_pheromone(num_cities);
     int num_ants = num_cities;
     int routes[num_ants][num_cities];
     double distances[num_ants];
-    int best_route[num_cities];
-    double best_distance = -1;
+
+    clock_t start_time = clock(); // Catat waktu awal
 
     for (int iteration = 0; iteration < 100; iteration++) {
-       
+
         for (int ant = 0; ant < num_ants; ant++) {
             int visited_cities[num_cities];
             memset(visited_cities, 0, sizeof(visited_cities));
 
-            int current_city = rand() % num_cities;
+            int current_city = start_city;
             visited_cities[current_city] = 1;
             routes[ant][0] = current_city;
 
@@ -113,31 +111,23 @@ void aco_algorithm(City cities[], int num_cities) {
                 total_distance += haversine_distance(cities[current_city], cities[next_city]);
                 current_city = next_city;
             }
-            total_distance += haversine_distance(cities[current_city], cities[routes[ant][0]]);
+            total_distance += haversine_distance(cities[current_city], cities[start_city]);
             distances[ant] = total_distance;
 
-            if (best_distance == -1 || total_distance < best_distance) {
-                best_distance = total_distance;
-                memcpy(best_route, routes[ant], sizeof(best_route));
+            if (*best_distance == -1 || total_distance < *best_distance) {
+                *best_distance = total_distance;
+                memcpy(best_route, routes[ant], num_cities * sizeof(int));
             }
         }
 
-      
+ 
         for (int ant = 0; ant < num_ants; ant++) {
             update_pheromone(num_cities, routes[ant], distances[ant]);
         }
     }
 
-
-  
-    printf("Best Route Found:\n");
-    for (int i = 0; i < num_cities; i++) {
-        printf("%s -> ", cities[best_route[i]].name);
-                 
-    }
-    printf("%s\n", cities[best_route[0]].name); 
-    printf("Best Route Distance: %.2f km\n", best_distance);
-
+    clock_t end_time = clock(); // Catat waktu akhir
+    *time_elapsed = (double)(end_time - start_time) / CLOCKS_PER_SEC; // Hitung selisih waktu
 }
 
 int main() {
@@ -145,8 +135,6 @@ int main() {
     char filename[50];
     printf("Masukkan nama file input (*.csv): ");
     scanf("%s", filename);
-
-
 
     // Baca file input
     file = fopen(filename, "r");
@@ -158,7 +146,6 @@ int main() {
     // Membaca data kota dari file CSV
     int num_cities = 0;
     char line[100];
-
     while (fgets(line, sizeof(line), file) != NULL) {
         num_cities++;
     }
@@ -169,12 +156,45 @@ int main() {
 
     // Membaca data kota dari file CSV dan memasukkannya ke dalam array of struct
     for (int i = 0; i < num_cities; i++) {
-        fscanf(file, "%s %lf %lf", cities[i].name, &cities[i].latitude, &cities[i].longitude);
-        cities[i].visited = 0;
+        fgets(line, sizeof(line), file);
+        sscanf(line, "%[^,],%lf,%lf", cities[i].name, &cities[i].latitude, &cities[i].longitude);
     }
     fclose(file);
+
+    // Meminta pengguna memasukkan kota keberangkatan
+    char departure_city[50];
+    printf("Masukkan kota keberangkatan: ");
+    scanf("%s", departure_city);
+
+    // Cari indeks kota keberangkatan
+    int departure_index = -1;
+    for (int i = 0; i < num_cities; i++) {
+        if (strcmp(cities[i].name, departure_city) == 0) {
+            departure_index = i;
+            break;
+        }
+    }
+    if (departure_index == -1) {
+        printf("Kota keberangkatan tidak ditemukan.\n");
+        return 1;
+    }
+
     // Menjalankan algoritma ACO
-    aco_algorithm(cities, num_cities);
+    srand(time(NULL)); 
+    int best_route[num_cities];
+    double best_distance = -1;
+    double time_elapsed = 0;
+
+    aco_algorithm(cities, num_cities, best_route, &best_distance, &time_elapsed, departure_index);
+
+    // Print best route
+    printf("Best Route Found:\n");
+    for (int i = 0; i < num_cities; i++) {
+        printf("%s -> ", cities[best_route[i]].name);
+    }
+    printf("%s\n", cities[best_route[0]].name); // Kembali ke kota keberangkatan
+    printf("Best Route Distance: %.2f km\n", best_distance);
+    printf("Time Elapsed: %.6f seconds\n", time_elapsed);
 
     return 0;
 }
