@@ -21,7 +21,11 @@ float distance(Peta kota1, Peta kota2) {
     return sqrt((dl*dl) + (db*db));
 }
 
-void tsp(Peta kota[MAX], float jarak[MAX][MAX], bool visited[], int currPos, int jumkota, int count, float cost, float *ans, int path[], int *minpath){
+void tsp(Peta kota[MAX], float jarak[MAX][MAX], bool visited[], int currPos, int jumkota, int count, float cost, float *ans, int path[], int *minpath, double *time_elapsed){
+    // Waktu
+    clock_t start_time = clock();
+
+
     if(count == jumkota && jarak[currPos][0]){
         if (*ans > cost + jarak[currPos][0]){
             *ans = cost + jarak[currPos][0];
@@ -36,17 +40,20 @@ void tsp(Peta kota[MAX], float jarak[MAX][MAX], bool visited[], int currPos, int
         if(!visited[i] && jarak[currPos][i]){
             visited[i] = true;
             path[count] = i;
-            tsp(kota, jarak, visited, i, jumkota, count + 1, cost + jarak[currPos][i], ans, path, minpath);
+            tsp(kota, jarak, visited, i, jumkota, count + 1, cost + jarak[currPos][i], ans, path, minpath, time_elapsed);
             visited[i] = false;
         }
     }
+    
+
+    // Waktu
+    clock_t end_time = clock();
+
+
+    *time_elapsed = (double)(end_time - start_time) / CLOCKS_PER_SEC;
 }
 
 int main() {
-    // Waktu
-    clock_t start_time = clock();
-
-
     // Buka file, cek validitas file
     char namafile[MAX];
     printf("Enter list of cities file name: ");
@@ -120,9 +127,12 @@ int main() {
     int path[MAX];
     int minpath[MAX];
 
+    srand(time(NULL));
     path[0] = position;
+    double time_elapsed = 0;
 
-    tsp(peta, jarak, visited, position, jumKota, 1, 0, &ans, path, minpath);
+
+    tsp(peta, jarak, visited, position, jumKota, 1, 0, &ans, path, minpath, &time_elapsed);
 
 
     // Output 
@@ -136,11 +146,7 @@ int main() {
     printf("Best route distance: %.4f\n", ans);
 
 
-    // Waktu
-    clock_t end_time = clock();
-    double elapsed_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
-
-    printf("Time elapsed: %.4f s", elapsed_time);
+    printf("Time elapsed: %.lf s", time_elapsed);
 
     return 0;
 }
