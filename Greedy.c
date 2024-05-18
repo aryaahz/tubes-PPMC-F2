@@ -4,6 +4,7 @@
 #include <math.h>
 
 #define MAX 255
+#define M_PI 3.14159265358979323846
 
 typedef struct {
     char kota[MAX];
@@ -12,10 +13,14 @@ typedef struct {
 } Peta;
 
 float distance(Peta kota1, Peta kota2) {
-    float dl = 0, db = 0;
-    dl = kota1.lintang - kota2.lintang;
-    db = kota1.bujur - kota2.bujur;
-    return sqrt((dl*dl) + (db*db));
+    float l1, b1, l2, b2, a;
+    //Langsung ke radian
+    l1 = kota1.lintang*M_PI/180; b1 = kota1.bujur*M_PI/180;
+    l2 = kota2.lintang*M_PI/180; b2 = kota2.bujur*M_PI/180;
+    
+    a = 0.5*(1-cos(l2-l1)+cos(l1)*cos(l2)*(1-cos(b2-b1)));
+    //Formula Haversine
+    return 6371*2*asin(sqrt(a));
 }
 
 int pilihTerdekat(int indeksKota, int jumKota, float jarak[jumKota][jumKota], int completed[jumKota], float *jarakTotal) {
@@ -69,7 +74,8 @@ int main() {
 
     Peta peta[MAX];
     char line[MAX];
-    int jumKota = 0, jarakTotal = 0;
+    int jumKota = 0;
+    float jarakTotal = 0;
 
     while (fgets(line, sizeof(line), file)) {
         char *token;
@@ -121,8 +127,9 @@ int main() {
         }
     }
     
-    printf("\n");
+    printf("\n\nRute optimal menurut Greedy Algorithm:\n");
     minJarak(0, jumKota, completed, peta, jarak, &jarakTotal);
-
+    printf("\nJarak tempuh: %.5f km", jarakTotal);
+    printf("\ndjak, yog:", distance(peta[0], peta[1]));
     return 0;
 }
