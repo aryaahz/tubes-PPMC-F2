@@ -30,6 +30,7 @@ typedef struct {
 
 Individual population[POP_SIZE];
 Individual newPopulation[POP_SIZE];
+int startIndex;
 
 double toRadians(double degree) {
     return degree * (M_PI / 180.0);
@@ -69,8 +70,12 @@ double calculateRouteDistance(int* route) {
 
 void initializePopulation() {
     for (int i = 0; i < POP_SIZE; i++) {
+        population[i].route[0] = startIndex;
+        int k = 1;
         for (int j = 0; j < cityCount; j++) {
-            population[i].route[j] = j;
+            if (j != startIndex) {
+                population[i].route[k++] = j;
+            }
         }
         for (int j = 1; j < cityCount; j++) {
             int r = rand() % (cityCount - 1) + 1;
@@ -99,24 +104,33 @@ Individual selectParent() {
 }
 
 void crossover(int* parent1, int* parent2, int* offspring) {
-    int start = rand() % cityCount;
-    int end = rand() % cityCount;
+    int visited[MAX_CITIES] = {0};
+    offspring[0] = startIndex;
+    visited[startIndex] = 1;
+
+    int start = rand() % (cityCount - 1) + 1;
+    int end = rand() % (cityCount - 1) + 1;
     if (start > end) {
         int temp = start;
         start = end;
         end = temp;
     }
-    int visited[MAX_CITIES] = {0};
+
     for (int i = start; i <= end; i++) {
         offspring[i] = parent1[i];
-        visited[parent1[i]] = 1;
+        visited[offspring[i]] = 1;
     }
+
     int currentIndex = (end + 1) % cityCount;
-    for (int i = 0; i < cityCount; i++) {
+    if (currentIndex == 0) currentIndex = 1;
+
+    for (int i = 1; i < cityCount; i++) {
         int city = parent2[i];
         if (!visited[city]) {
             offspring[currentIndex] = city;
-            currentIndex = (currentIndex + 1) % cityCount;
+            visited[city] = 1;
+            currentIndex++;
+            if (currentIndex >= cityCount) currentIndex = 1;
         }
     }
 }
@@ -125,9 +139,11 @@ void mutate(int* route) {
     for (int i = 1; i < cityCount; i++) {
         if (((double) rand() / RAND_MAX) < MUT_RATE) {
             int j = rand() % (cityCount - 1) + 1;
-            int temp = route[i];
-            route[i] = route[j];
-            route[j] = temp;
+            if (i != j) {
+                int temp = route[i];
+                route[i] = route[j];
+                route[j] = temp;
+            }
         }
     }
 }
@@ -154,11 +170,18 @@ void readCitiesFromFile(char* filename) {
 
     char line[100];
     while (fgets(line, sizeof(line), file)) {
-        if (sscanf(line, "%[^,],%lf,%lf", cities[cityCount].name, &cities[cityCount].latitude, &cities[cityCount].longitude) == 3) {
-            cityCount++;
-        } else {
-            printf("Format file salah.\n");
-            exit(EXIT_FAILURE);
+        char* token = strtok(line, ",");
+        if (token) {
+            strcpy(cities[cityCount].name, token);
+            token = strtok(NULL, ",");
+            if (token) {
+                cities[cityCount].latitude = atof(token);
+                token = strtok(NULL, ",");
+                if (token) {
+                    cities[cityCount].longitude = atof(token);
+                    cityCount++;
+                }
+            }
         }
     }
 
@@ -200,7 +223,7 @@ int main() {
 
     readCitiesFromFile(filename);
 
-    int startIndex = findCityIndex(startCity);
+    startIndex = findCityIndex(startCity);
     if (startIndex == -1) {
         printf("Kota keberangkatan tidak ditemukan dalam daftar kota.\n");
         return EXIT_FAILURE;
@@ -217,7 +240,7 @@ int main() {
 
     clock_t endTime = clock();
     printBestRoute();
-    printf("Time elapsed: %.10f s\n", (double)(endTime - startTime) / CLOCKS_PER_SEC);
+    printf("Time elapsed: %.10f s\n", (double) (endTime - startTime) / CLOCKS_PER_SEC);
 
     return 0;
 }
