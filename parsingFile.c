@@ -1,3 +1,16 @@
+/*
+Program Parsing File .csv ke Struct Peta dan Matriks Jarak untuk TSP
+Semua variabel telah diinisialisasi saat parsing file.
+Berikut file yang dapat digunakan langsung oleh algoritma:
+struct: Peta peta (dengan data nama kota, lintang, dan bujur, akses dengan indeks 0 s.d. (jumKota-1))
+int: jumKota (jumlah Kota);
+float: jarak[jumKota][jumKota] (matriks jarak antarkota dalam km, akses dengan indeks sesuai matriks yang di-print program)
+
+File dengan nilai nol untuk menyimpan progres algoritma:
+int: completed[jumKota] (untuk merekam apakah kota telah di-visit atau belum);
+float: jarakTotal (untuk merekam jarak tiap path);
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
