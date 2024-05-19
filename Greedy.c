@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 
 #define MAX 255
 #define M_PI 3.14159265358979323846
@@ -127,9 +128,15 @@ int main() {
         }
     }
     
+    clock_t t; 
+    t = clock();
+    
     printf("\n\nRute optimal menurut Greedy Algorithm:\n");
     minJarak(0, jumKota, completed, peta, jarak, &jarakTotal);
     printf("\nJarak tempuh: %.5f km", jarakTotal);
-    printf("\ndjak, yog:", distance(peta[0], peta[1]));
+
+    t = clock() - t; 
+    double time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds 
+    printf("\n\Greedy took %f seconds to execute \n", time_taken);
     return 0;
 }
