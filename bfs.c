@@ -5,9 +5,10 @@
 #include <float.h>
 #include <time.h>
 
-#define MAX_CITIES 10
+#define MAX_CITIES 16
+#define INITIAL_QUEUE_SIZE 1410065408
 #define PI 3.14159265358979323846
-#define R 6371 // Jari-jari bumi dalam km
+#define R 6371 // Radius of the Earth in km
 
 typedef struct {
     char name[100];
@@ -32,7 +33,7 @@ double haversine(double lat1, double lon1, double lat2, double lon2) {
     lat2 = toRadians(lat2);
 
     double a = sin(dLat / 2) * sin(dLat / 2) +
-               sin(dLon / 2) * sin(dLon / 2) * cos(lat1) * cos(lat2);
+               cos(lat1) * cos(lat2) * sin(dLon / 2) * sin(dLon / 2);
     double c = 2 * atan2(sqrt(a), sqrt(1 - a));
     return R * c;
 }
@@ -62,11 +63,12 @@ void printRoute(Route* route, City cities[]) {
     for (int i = 0; i < route->count; i++) {
         printf("%s -> ", cities[route->cities[i]].name);
     }
-    printf("%s\n", cities[route->cities[0]].name);
+    printf("%s\n", cities[route->cities[0]].name); // Loop back to start
 }
 
 void bfs(City cities[], int numCities, int startCity) {
-    Route queue[10000];
+    int queueSize = INITIAL_QUEUE_SIZE;
+    Route *queue = malloc(queueSize * sizeof(Route));
     int front = 0, rear = 0;
 
     Route initialRoute;
@@ -99,9 +101,18 @@ void bfs(City cities[], int numCities, int startCity) {
                 }
                 if (!alreadyVisited) {
                     Route newRoute = currentRoute;
-                    newRoute.cities[newRoute.count++] = i;
+                    newRoute.cities[newRoute.count] = i;
+                    newRoute.count++;
                     newRoute.distance += haversine(cities[currentRoute.cities[currentRoute.count - 1]].latitude, cities[currentRoute.cities[currentRoute.count - 1]].longitude,
                                                    cities[i].latitude, cities[i].longitude);
+                    if (rear >= queueSize) {
+                        queueSize *= 2;
+                        queue = realloc(queue, queueSize * sizeof(Route));
+                        if (queue == NULL) {
+                            perror("Unable to allocate memory for the queue");
+                            exit(EXIT_FAILURE);
+                        }
+                    }
                     queue[rear++] = newRoute;
                 }
             }
@@ -111,6 +122,8 @@ void bfs(City cities[], int numCities, int startCity) {
     printf("Best route found:\n");
     printRoute(&bestRoute, cities);
     printf("Best route distance: %.5f km\n", minDist);
+
+    free(queue);
 }
 
 int main() {
@@ -145,6 +158,7 @@ int main() {
     clock_t end = clock();
     double timeSpent = (double)(end - begin) / CLOCKS_PER_SEC;
     printf("Time elapsed: %.10f s\n", timeSpent);
+
 
     return 0;
 }
