@@ -1,3 +1,11 @@
+/**Tugas Besar EL2008 Praktikum Pemecahan Masalah dengan C 2023/2024
+ * Nama (NIM)       : Jauzaa Aliya Adriansyah (18322015)
+ * Kelompok         : F2
+ * Asisten (NIM)    : Emmanuella Pramudita Rumanti (13220031)
+ * Nama File        : AlgoritmaGenetika.c
+ * Deskripsi        : Program penyelesaian travelling salesman dengan algoritma genetika
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
