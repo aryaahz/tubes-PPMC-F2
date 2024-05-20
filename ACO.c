@@ -1,3 +1,11 @@
+/*EL2208 Praktikum Pemecahan Masalah dengan C 2023/2024
+*Modul            : 9 - Tugas Besar
+*Nama (NIM)       : Kanzha Haiqa Arsytya (18322011)
+*Asisten (NIM)    : Emmanuella Pramudita Rumanti (13220031)
+*Deskripsi        : Membuat program untuk menyelesaikan masalah Travelling Salesman Problem dengan menggunakan
+pendekatan algoritma Ant Colony Optimization
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
