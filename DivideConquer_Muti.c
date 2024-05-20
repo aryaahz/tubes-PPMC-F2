@@ -1,3 +1,11 @@
+/**Tugas Besar EL2008 Praktikum Pemecahan Masalah dengan C 2023/2024
+ * Nama (NIM)       : Mutia Nurfadilah (18322014)
+ * Kelompok         : F2
+ * Asisten (NIM)    : Emmanuella Pramudita Rumanti (13220031)
+ * Nama File        : DivideConquer_Muti.c
+ * Deskripsi        : Program penyelesaian travelling salesman dengan algoritma divide and conquer
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
