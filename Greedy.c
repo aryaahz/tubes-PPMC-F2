@@ -1,3 +1,11 @@
+/**Tugas Besar EL2008 Praktikum Pemecahan Masalah dengan C 2023/2024
+ * Nama (NIM)       : Audrey Ahzab (18322010)
+ * Kelompok         : F2
+ * Asisten (NIM)    : Emmanuella Pramudita Rumanti (13220031)
+ * Nama File        : Greedy.c
+ * Deskripsi        : Program 'penyelesaian' Traveling Salesman Problem dengan algoritma Greedy 
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,12 +15,14 @@
 #define MAX 255
 #define M_PI 3.14159265358979323846
 
+//Struct yang menyimpan data kota
 typedef struct {
     char kota[MAX];
     double lintang;
     double bujur;
 } Peta;
 
+//Fungsi perhitungan jarak antarkota
 float distance(Peta kota1, Peta kota2) {
     float l1, b1, l2, b2, a;
     //Langsung ke radian
@@ -24,6 +34,7 @@ float distance(Peta kota1, Peta kota2) {
     return 6371*2*asin(sqrt(a));
 }
 
+//Fungsi pemilihan kota dengan jarak terdekat dari node kota awal (beserta penyetoran jarak ke jarakTotal) 
 int pilihTerdekat(int indeksKota, int jumKota, float jarak[jumKota][jumKota], int completed[jumKota], float *jarakTotal) {
     int i, nextKota = -1;
     float min = 999999.0;
@@ -42,6 +53,7 @@ int pilihTerdekat(int indeksKota, int jumKota, float jarak[jumKota][jumKota], in
     return nextKota;
 }
 
+//Fungsi rekursif pemilihan kota hingga semua kota telah dikunjungi
 void minJarak(int indeksKota, int jumKota, int completed[jumKota], Peta peta[jumKota], float jarak[jumKota][jumKota], float *jarakTotal) {
     int nextKota;
     completed[indeksKota] = 1;
@@ -94,7 +106,7 @@ int main() {
 
     fclose(file);
 
-    // Print database kota
+    //Print database kota
     printf("\nData kota pada struct:");
     for (int j = 0; j < jumKota; j++) {
         printf("Kota: %s, Latitude: %.4f, Longitude: %.4f\n", peta[j].kota, peta[j].lintang, peta[j].bujur);
@@ -111,8 +123,6 @@ int main() {
         completed[j] = 0;
     }
 
-    //Printingnya pake header buat baris dan kolom, tapi matriks jaraknya tetep cuma jarak ya isinya
-    //Jadi nama kota gaada di matriks
     for(int i = 0; i < jumKota; i++) {
         printf("\n\t");
 
@@ -127,7 +137,8 @@ int main() {
             printf("\t%.2f", jarak[i][k]);
         }
     }
-    
+
+    //Pelaksanaan algoritma Greedy dan perekaman waktu eksekusinya
     clock_t t; 
     t = clock();
     
@@ -136,7 +147,7 @@ int main() {
     printf("\nJarak tempuh: %.5f km", jarakTotal);
 
     t = clock() - t; 
-    double time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds 
-    printf("\n\Greedy took %f seconds to execute \n", time_taken);
+    double time_taken = ((double)t)/CLOCKS_PER_SEC; //dalam detik
+    printf("\nGreedy took %f seconds to execute \n", time_taken);
     return 0;
 }
