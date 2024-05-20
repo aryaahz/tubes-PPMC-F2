@@ -1,3 +1,12 @@
+/**Tugas Besar EL2008 Praktikum Pemecahan Masalah dengan C 2023/2024
+ * Nama (NIM)       : Ronaldo (18322007)
+ * Kelompok         : F2
+ * Asisten (NIM)    : Emmanuella Pramudita Rumanti (13220031)
+ * Nama File        : DFS.c
+ * Deskripsi        : Program penyelesaian travelling salesman dengan algoritma dfs 
+ * Maksimal input   : 14 kota (15 kota keatas > 900 sec)
+*/
+
 #include <limits.h>
 #include <math.h>
 #include <stdio.h>
@@ -7,6 +16,7 @@
 #include <time.h>
 
 #define MAX 255
+#define M_PI 3.14159265358979323846
 
 typedef struct {
     char kota[MAX];
@@ -15,10 +25,14 @@ typedef struct {
 } Peta;
 
 float distance(Peta kota1, Peta kota2) {
-    float dl = 0, db = 0;
-    dl = kota1.lintang - kota2.lintang;
-    db = kota1.bujur - kota2.bujur;
-    return sqrt((dl*dl) + (db*db));
+    float l1, b1, l2, b2, a;
+    //Langsung ke radian
+    l1 = kota1.lintang*M_PI/180; b1 = kota1.bujur*M_PI/180;
+    l2 = kota2.lintang*M_PI/180; b2 = kota2.bujur*M_PI/180;
+    
+    a = 0.5*(1-cos(l2-l1)+cos(l1)*cos(l2)*(1-cos(b2-b1)));
+    //Formula Haversine
+    return 6371*2*asin(sqrt(a));
 }
 
 void tsp(Peta kota[MAX], float jarak[MAX][MAX], bool visited[], int currPos, int jumkota, int count, float cost, float *ans, int path[], int *minpath, double *time_elapsed){
@@ -50,7 +64,7 @@ void tsp(Peta kota[MAX], float jarak[MAX][MAX], bool visited[], int currPos, int
     clock_t end_time = clock();
 
 
-    *time_elapsed = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+    *time_elapsed = (double)(end_time - start_time)/ CLOCKS_PER_SEC;
 }
 
 int main() {
