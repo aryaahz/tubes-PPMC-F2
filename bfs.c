@@ -1,3 +1,9 @@
+/** EL2208 Praktikum Pemecahan Masalah dengan C 2023/2024
+ *   Modul               : 9 – Tugas Besar
+ *   Nama (NIM)          : Amelia Dina Savitri (18322006)
+ *   Nama File           : bfs.c
+ *   Deskripsi           : Program untuk menyelesaikan TSP (The Travelling Salesman Problem) menggunakan metode algoritma BFS (Breadth First Search) yang menggunakan graf sebagai teknik pendekatan rute terpendek
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
